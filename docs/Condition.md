@@ -1,5 +1,7 @@
 # SQL::QueryBuilder::WebApi::Object::Condition
 
+Defines a constraint for original query resultset values.
+
 ## Load the model package
 ```perl
 use SQL::QueryBuilder::WebApi::Object::Condition;

@@ -1,5 +1,7 @@
 # SQL::QueryBuilder::WebApi::Object::TransformResult
 
+Returns transformed SQL text in case of successful transformation. Otherwise returns error message.
+
 ## Load the model package
 ```perl
 use SQL::QueryBuilder::WebApi::Object::TransformResult;

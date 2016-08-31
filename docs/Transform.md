@@ -1,5 +1,7 @@
 # SQL::QueryBuilder::WebApi::Object::Transform
 
+SQL transformation parameters and commands.
+
 ## Load the model package
 ```perl
 use SQL::QueryBuilder::WebApi::Object::Transform;

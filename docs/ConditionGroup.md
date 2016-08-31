@@ -1,5 +1,7 @@
 # SQL::QueryBuilder::WebApi::Object::ConditionGroup
 
+Group of conditions joined with the same boolean operator.
+
 ## Load the model package
 ```perl
 use SQL::QueryBuilder::WebApi::Object::ConditionGroup;

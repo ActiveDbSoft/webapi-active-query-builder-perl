@@ -1,5 +1,7 @@
 # SQL::QueryBuilder::WebApi::Object::SqlQuery
 
+Information about SQL query and it&#39;s context.
+
 ## Load the model package
 ```perl
 use SQL::QueryBuilder::WebApi::Object::SqlQuery;

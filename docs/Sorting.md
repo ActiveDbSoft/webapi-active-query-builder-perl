@@ -1,5 +1,7 @@
 # SQL::QueryBuilder::WebApi::Object::Sorting
 
+Determines rows order in transformed query. If there aren&#39;t any sortings, the original query sorting is kept.
+
 ## Load the model package
 ```perl
 use SQL::QueryBuilder::WebApi::Object::Sorting;

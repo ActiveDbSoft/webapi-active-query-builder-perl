@@ -1,5 +1,7 @@
 # SQL::QueryBuilder::WebApi::Object::QueryColumn
 
+Provides information about particular SQL query column
+
 ## Load the model package
 ```perl
 use SQL::QueryBuilder::WebApi::Object::QueryColumn;
