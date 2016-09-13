@@ -10,7 +10,7 @@ use SQL::QueryBuilder::WebApi::Object::ConditionGroup;
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**junction_type** | **string** | Type of junction. All &#x3D; AND; Any &#x3D; OR. | [optional] 
+**junction_type** | **string** | Type of junction. All = AND; Any = OR. | [optional] 
 **conditions** | [**ARRAY[Condition]**](Condition.md) | List of conditions to join. | [optional] 
 **condition_groups** | [**ARRAY[ConditionGroup]**](ConditionGroup.md) | List of nested condition groups to join them with a different boolean operator. | [optional] 
 
