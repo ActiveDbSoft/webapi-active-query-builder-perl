@@ -109,17 +109,44 @@ use SQL::QueryBuilder::WebApi::Object::TransformResult;
 # for displaying the API response data
 use Data::Dumper;
 
-my $api_instance = SQL::QueryBuilder::WebApi::ActiveQueryBuilderApi->new();
+my $api = SQL::QueryBuilder::WebApi::ActiveQueryBuilderApi->new();
+my $metadataGuid = 'b3207f4f-b1f4-4dc2-979b-7724ed2d0221';
+my $sql = 'Select customer_id, first_name From customer';
+
 my $query = SQL::QueryBuilder::WebApi::Object::SqlQuery->new(); # SqlQuery | Information about SQL query and it's context.
+$query->guid( $metadataGuid );
+$query->text( $sql );
 
-eval {
-    my $result = $api_instance->get_query_columns_post(query => $query);
-    print Dumper($result);
-};
-if ($@) {
-    warn "Exception when calling ActiveQueryBuilderApi->get_query_columns_post: $@\n";
-}
+my $columns = $api->get_query_columns_post(query => $query);
+print Dumper($columns);
 
+my $transform = SQL::QueryBuilder::WebApi::Object::Transform->new();
+$transform->guid( $metadataGuid );
+$transform->sql( $sql );
+
+my $filter = SQL::QueryBuilder::WebApi::Object::ConditionGroup->new();
+
+my $condition = SQL::QueryBuilder::WebApi::Object::Condition->new();
+$condition->field('customer_id');
+$condition->condition_operator('Greater');
+$condition->values( [ '10' ] );
+
+$filter->conditions( [ $condition ] );
+
+my $page = SQL::QueryBuilder::WebApi::Object::Pagination->new();
+$page->skip(2);
+$page->take(3);
+
+my $order = SQL::QueryBuilder::WebApi::Object::Sorting->new();
+$order->field('customer_id');
+$order->order('desc');
+
+$transform->filter($filter);
+$transform->pagination($page);
+$transform->sortings( [ $order ] );
+
+my $result = $api->transform_sql_post(transform => $transform);
+print Dumper($result);
 ```
 
 # DOCUMENTATION FOR API ENDPOINTS
