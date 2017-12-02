@@ -1,0 +1,294 @@
+#!/usr/bin/perl
+use lib 'lib';
+use strict;
+use warnings;
+
+# for displaying the API response data
+use Data::Dumper;
+
+use Test::More;
+
+use SQL::QueryBuilder::WebApi;
+ 
+my $guid = 'b3207f4f-b1f4-4dc2-979b-7724ed2d0221';
+my $sql = 'select customer_id, first_name, last_name, create_date from customer';
+
+sub get_transform() {
+  my $transform = create_transform();
+  $transform->guid( $guid );
+  $transform->sql( $sql );
+  
+  return $transform;
+}
+
+my $api = create_api;
+
+# Avg
+my $transform = get_transform();
+
+my $avg = create_totals();
+$avg->field('first_name');
+$avg->aggregate('avg');
+
+$transform->totals( [ $avg ] );
+
+my $result = $api->transform_sql_post(transform => $transform);
+my $correct = 'Select Avg(q.first_name) as first_nameavg From (Select customer.customer_id customer_id, customer.first_name first_name, customer.last_name last_name, customer.create_date create_date From customer) q';
+
+is(lc $result->totals, lc $correct, 'Avg');
+#end Avg
+
+# Count
+$transform = get_transform();
+
+my $count = create_totals();
+$count->field('first_name');
+$count->aggregate('count');
+
+$transform->totals( [ $count ] );
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'Select Count(q.first_name) as first_namecount From (Select customer.customer_id customer_id, customer.first_name first_name, customer.last_name last_name, customer.create_date create_date From customer) q';
+
+is(lc $result->totals, lc $correct, 'Count');
+#end Count
+
+# Max
+$transform = get_transform();
+
+my $max = create_totals();
+$max->field('first_name');
+$max->aggregate('max');
+
+$transform->totals( [ $max ] );
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'Select Max(q.first_name) as first_namemax From (Select customer.customer_id customer_id, customer.first_name first_name, customer.last_name last_name, customer.create_date create_date From customer) q';
+
+is(lc $result->totals, lc $correct, 'Max');
+#end Max
+
+# Min
+$transform = get_transform();
+
+my $min = create_totals();
+$min->field('first_name');
+$min->aggregate('min');
+
+$transform->totals( [ $min ] );
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'Select Min(q.first_name) as first_namemin From (Select customer.customer_id customer_id, customer.first_name first_name, customer.last_name last_name, customer.create_date create_date From customer) q';
+
+is(lc $result->totals, lc $correct, 'Min');
+#end Min
+
+# Sum
+$transform = get_transform();
+
+my $sum = create_totals();
+$sum->field('first_name');
+$sum->aggregate('sum');
+
+$transform->totals( [ $sum ] );
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'Select Sum(q.first_name) as first_namesum From (Select customer.customer_id customer_id, customer.first_name first_name, customer.last_name last_name, customer.create_date create_date From customer) q';
+
+is(lc $result->totals, lc $correct, 'Sum');
+#end Sum
+
+# Order
+$transform = get_transform();
+
+my $order = create_sorting();
+$order->field('customer_id');
+$order->order('asc');
+
+$transform->sortings( [ $order ] );
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'Select customer.customer_id, customer.first_name, customer.last_name, customer.create_date From customer order by customer.customer_id';
+
+is(lc $result->sql, lc $correct, 'Order');
+#end Order
+
+# Order desc
+$transform = get_transform();
+
+$order = create_sorting();
+$order->field('customer_id');
+$order->order('desc');
+
+$transform->sortings( [ $order ] );
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'Select customer.customer_id, customer.first_name, customer.last_name, customer.create_date From customer order by customer.customer_id desc';
+
+is(lc $result->sql, lc $correct, 'Order desc');
+#end Order desc
+
+# Pagination
+$transform = get_transform();
+
+my $page = create_pagination();
+$page->skip(2);
+$page->take(3);
+
+$transform->pagination($page);
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'select customer.customer_id, customer.first_name, customer.last_name, customer.create_date from customer limit 3 offset 2';
+
+is(lc $result->sql, lc $correct, 'Pagination');
+#end Pagination
+
+# Hide column
+$transform = get_transform();
+
+my $column = create_hidden_column();
+$column->field('first_name');
+
+$transform->hidden_columns([ $column ]);
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'select q.customer_id, q.last_name, q.create_date from (select customer.customer_id customer_id, customer.first_name first_name, customer.last_name last_name, customer.create_date create_date from customer) q';
+
+is(lc $result->sql, lc $correct, 'Hide column');
+#end Hide column
+
+# Filter contains
+$transform = get_transform();
+
+my $filter = create_condition_group();
+
+my $condition = create_condition();
+$condition->field('first_name');
+$condition->condition_operator('Contains');
+$condition->values( [ 'Orlando' ] );
+
+$filter->conditions( [ $condition ] );
+
+$transform->filter($filter);
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = "select customer.customer_id, customer.first_name, customer.last_name, customer.create_date from customer where customer.first_name like '%Orlando%'";
+
+is(lc $result->sql, lc $correct, 'Filter contains');
+#end Filter contains
+
+# Filter less
+$transform = get_transform();
+
+$filter = create_condition_group();
+
+$condition = create_condition();
+$condition->field('customer_id');
+$condition->condition_operator('Less');
+$condition->values( [ 5 ] );
+
+$filter->conditions( [ $condition ] );
+
+$transform->filter($filter);
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'select customer.customer_id, customer.first_name, customer.last_name, customer.create_date from customer where customer.customer_id < 5';
+
+is(lc $result->sql, lc $correct, 'Filter less');
+#end Filter less
+
+# Filter between
+$transform = get_transform();
+
+$filter = create_condition_group();
+
+$condition = create_condition();
+$condition->field('customer_id');
+$condition->condition_operator('Between');
+$condition->values( [ 1, 5 ] );
+
+$filter->conditions( [ $condition ] );
+
+$transform->filter($filter);
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'select customer.customer_id, customer.first_name, customer.last_name, customer.create_date from customer where customer.customer_id between 1 and 5';
+
+is(lc $result->sql, lc $correct, 'Filter between');
+#end Filter between
+
+# Filter is not null
+$transform = get_transform();
+
+$filter = create_condition_group();
+
+$condition = create_condition();
+$condition->field('customer_id');
+$condition->condition_operator('IsNotNull');
+
+$filter->conditions( [ $condition ] );
+
+$transform->filter($filter);
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'select customer.customer_id, customer.first_name, customer.last_name, customer.create_date from customer where customer.customer_id is not null';
+
+is(lc $result->sql, lc $correct, 'Filter is not null');
+#end Filter is not null
+
+# Filter condition group
+$transform = get_transform();
+
+$filter = create_condition_group();
+
+my $conditionGroup = create_condition_group();
+$conditionGroup->junction_type('And');
+
+my $condition1 = create_condition();
+$condition1->field('customer_id');
+$condition1->condition_operator('IsNull');
+
+my $condition2 = create_condition();
+$condition2->field('customer_id');
+$condition2->condition_operator('IsNotNull');
+
+$conditionGroup->conditions( [ $condition1, $condition2 ] );
+
+$filter->condition_groups( [ $conditionGroup ] );
+
+$transform->filter($filter);
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'select customer.customer_id, customer.first_name, customer.last_name, customer.create_date from customer where (customer.customer_id is null) and (customer.customer_id is not null)';
+
+is(lc $result->sql, lc $correct, 'Filter condition group');
+#end Filter condition group
+
+# Invalid column
+$transform = get_transform();
+
+$count = create_totals();
+$count->field('id1');
+$count->aggregate('count');
+
+$transform->totals( [ $count ] );
+
+$result = $api->transform_sql_post(transform => $transform);
+$correct = 'QueryTransformer does\'t contain id1';
+
+is(lc $result->error, lc $correct, 'Invalid column');
+#end Invalid column
+
+# Get query columns
+my $query = create_sql_query();
+$query->guid( $guid );
+$query->text( $sql );
+
+my $columns = $api->get_query_columns_post(query => $query);
+
+is((pop $columns)->name, 'create_date', 'Get query columns name');
+is((pop $columns)->data_type, 'varchar', 'Get query columns type');
+#end Get query columns
+
+done_testing();
+=cut
